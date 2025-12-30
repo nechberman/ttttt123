@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז תמיכה טכנית</title>
+    <style>
+        :root {
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --primary: #2563eb;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .stat-box {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-secondary {
+            background: #475569;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>עזרה מרחוק 🛠️</h1>
+        <p>כאן תוכל למצוא פרטים על המחשב שלך וקישור להתחברות</p>
+    </div>
+
+    <div class="card">
+        <h3>אבחון מהיר:</h3>
+        <div class="grid">
+            <div class="stat-box">
+                <div class="stat-label">זיכרון RAM מוערך</div>
+                <div class="stat-value" id="ram">בודק...</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">ליבות מעבד</div>
+                <div class="stat-value" id="cores">בודק...</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">מערכת הפעלה</div>
+                <div class="stat-value" id="os">בודק...</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">חיבור לאינטרנט</div>
+                <div class="stat-value" id="net">בודק...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>שליטה מרחוק:</h3>
+        <p style="font-size: 14px; color: var(--muted);">לחץ על הכפתור כדי להוריד את תוכנת החיבור</p>
+        <a href="https://anydesk.com/en/downloads/windows" class="btn" target="_blank">הורדת AnyDesk</a>
+        <a href="https://rustdesk.com/" class="btn btn-secondary" target="_blank">הורדת RustDesk (מומלץ)</a>
+    </div>
+
+    <div class="footer">
+        נבנה כדי לעזור לכם לעזור לאחרים 
+    </div>
+</div>
+
+<script>
+    // בדיקת RAM
+    if (navigator.deviceMemory) {
+        document.getElementById('ram').innerText = navigator.deviceMemory + " GB";
+    } else {
+        document.getElementById('ram').innerText = "לא ניתן לזהות";
+    }
+
+    // בדיקת ליבות
+    document.getElementById('cores').innerText = navigator.hardwareConcurrency || "לא ידוע";
+
+    // בדיקת מערכת הפעלה (פשוטה)
+    let os = "לא ידוע";
+    if (navigator.userAgent.indexOf("Win") != -1) os = "Windows";
+    if (navigator.userAgent.indexOf("Mac") != -1) os = "MacOS";
+    if (navigator.userAgent.indexOf("Linux") != -1) os = "Linux";
+    document.getElementById('os').innerText = os;
+
+    // בדיקת חיבור
+    if (navigator.connection) {
+        document.getElementById('net').innerText = navigator.connection.effectiveType || "מחובר";
+    } else {
+        document.getElementById('net').innerText = "מחובר";
+    }
+</script>
+
+</body>
+</html>
