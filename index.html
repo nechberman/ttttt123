@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מרכז אבחון ותמיכה</title>
+    <title>מרכז אבחון מהיר</title>
     <style>
         :root {
             --bg: #0f172a; --card: #1e293b; --primary: #3b82f6;
-            --text: #f8fafc; --muted: #94a3b8; --accent: #10b981; --error: #ef4444;
+            --text: #f8fafc; --muted: #94a3b8; --accent: #10b981;
         }
         body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { max-width: 650px; width: 100%; }
@@ -16,29 +16,24 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .stat-box { background: rgba(15, 23, 42, 0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-        .stat-value { font-weight: bold; font-size: 16px; color: var(--accent); }
-        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 12px; background: var(--primary); color: white; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.2s; }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
-        .btn-copy { background: #475569; font-size: 13px; text-align: right; justify-content: flex-start; padding-right: 15px; }
+        .stat-value { font-weight: bold; font-size: 15px; color: var(--accent); word-break: break-all; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--primary); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn:disabled { background: #475569; }
         .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .speed-box { text-align: center; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 15px; border: 1px solid var(--primary); }
         .speed-val { font-size: 32px; font-weight: 800; color: var(--primary); }
-        .progress-container { width: 100%; background: #334155; height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
-        .cmd-info { font-size: 11px; color: var(--muted); margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>מרכז אבחון ותמיכה 🛠️</h1>
-        <p style="color:var(--muted)">בדיקת מהירות, חומרה וכלים למתקדמים</p>
+        <h1>אבחון מערכת אונליין 🛠️</h1>
+        <p style="color:var(--muted)">בדיקת חומרה ומהירות ללא התקנה</p>
     </div>
 
     <div class="card">
-        <button class="btn" id="mainBtn" onclick="startFullTest()">🚀 התחל בדיקה מקיפה (10 שניות)</button>
-        <div class="progress-container" id="pContainer"><div class="progress-bar" id="pBar"></div></div>
+        <button class="btn" id="mainBtn" onclick="runDiagnostic()">🚀 התחל בדיקה (10 שניות)</button>
 
         <div id="results" style="display: none; margin-top: 20px;">
             <div class="speed-grid">
@@ -55,98 +50,78 @@
             </div>
 
             <div class="grid" style="margin-top: 20px;">
-                <div class="stat-box"><div class="stat-label">IP ציבורי</div><div class="stat-value" id="ip">טוען...</div></div>
-                <div class="stat-box"><div class="stat-label">דיוק שעון</div><div class="stat-value" id="timeCheck">בודק...</div></div>
-                <div class="stat-box"><div class="stat-label">רזולוציה</div><div class="stat-value" id="res">--</div></div>
-                <div class="stat-box"><div class="stat-label">מעבד (לוגי)</div><div class="stat-value" id="cores">--</div></div>
+                <div class="stat-box"><div class="stat-label">מעבד / גרפיקה</div><div class="stat-value" id="cpuInfo">מזהה...</div></div>
+                <div class="stat-box"><div class="stat-label">זיכרון (RAM)</div><div class="stat-value" id="ramInfo">--</div></div>
+                <div class="stat-box"><div class="stat-label">IP ציבורי</div><div class="stat-value" id="ipInfo">טוען...</div></div>
+                <div class="stat-box"><div class="stat-label">מערכת הפעלה</div><div class="stat-value" id="osInfo">--</div></div>
+                <div class="stat-box"><div class="stat-label">רזולוציית מסך</div><div class="stat-value" id="resInfo">--</div></div>
+                <div class="stat-box"><div class="stat-label">ליבות מעבד</div><div class="stat-value" id="coreInfo">--</div></div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h3>פקודות זיהוי חומרה (ווינדוס)</h3>
-        <p style="font-size:13px; color:var(--muted)">לחץ להעתקה, הקש <b>Win + R</b>, הדבק ולחץ Enter:</p>
-        
-        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name\"')">
-            📋 העתק פקודה לזיהוי מעבד (CPU) מדויק
-        </button>
-        
-        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"$os = Get-CimInstance Win32_OperatingSystem; $uptime = (Get-Date) - $os.LastBootUpTime; Write-Host \'המחשב דולק ברצף:\' $uptime.Days \'ימים,\' $uptime.Hours \'שעות ו-\' $uptime.Minutes \'דקות.\'\"')">
-            📋 העתק בדיקת זמן עבודה (Uptime)
-        </button>
-        <span class="cmd-info">* בודק מתי המחשב עבר ריסטארט אמיתי לאחרונה</span>
-
-        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object { [Math]::Round($_.Sum / 1GB, 2) }\"')">
-            📋 העתק פקודה לזיהוי RAM מדויק
-        </button>
-    </div>
-
-    <div class="card">
         <h3>שליטה מרחוק</h3>
         <div class="grid">
-            <a href="https://download.anydesk.com/AnyDesk.exe" class="btn">AnyDesk</a>
-            <a href="https://remotedesktop.google.com/support" target="_blank" class="btn" style="background:#ea4335">Chrome Remote</a>
+            <a href="https://download.anydesk.com/AnyDesk.exe" class="btn" style="text-decoration:none">AnyDesk</a>
+            <a href="https://remotedesktop.google.com/support" target="_blank" class="btn" style="background:#ea4335; text-decoration:none">Chrome Remote</a>
         </div>
     </div>
 </div>
 
 <script>
-    async function startFullTest() {
+    function getHardwareInfo() {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return "לא ניתן לזהות מעבד";
+        
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (!debugInfo) return "מעבד גרפי סטנדרטי";
+        
+        return gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+    }
+
+    async function runDiagnostic() {
         const btn = document.getElementById('mainBtn');
-        const pBar = document.getElementById('pBar');
-        const pContainer = document.getElementById('pContainer');
-        
         btn.disabled = true;
-        pContainer.style.display = 'block';
+        btn.innerText = "מבצע בדיקות...";
         document.getElementById('results').style.display = 'block';
-        
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 1;
-            pBar.style.width = progress + '%';
-            if (progress >= 100) clearInterval(interval);
-        }, 100);
 
-        // IP & Time & Res
-        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ip').innerText = d.ip);
-        
-        const localTime = new Date().getTime();
-        document.getElementById('timeCheck').innerText = "תקין"; // פשטני, ניתן לשפר מול שרת
-        document.getElementById('res').innerText = window.screen.width + "x" + window.screen.height;
-        document.getElementById('cores').innerText = navigator.hardwareConcurrency + " ליבות";
+        // זהוי חומרה דרך ה-GPU (הכי קרוב למעבד שאפשר)
+        document.getElementById('cpuInfo').innerText = getHardwareInfo();
+        document.getElementById('ramInfo').innerText = (navigator.deviceMemory || "לא ידוע") + " GB (מוגבל דפדפן)";
+        document.getElementById('coreInfo').innerText = navigator.hardwareConcurrency + " ליבות לוגיות";
+        document.getElementById('osInfo').innerText = navigator.platform;
+        document.getElementById('resInfo').innerText = window.screen.width + "x" + window.screen.height;
 
-        // Speed Tests
-        const downMbps = await testDownload();
-        document.getElementById('downSpeed').innerText = downMbps;
-        const upMbps = await testUpload();
-        document.getElementById('upSpeed').innerText = upMbps;
+        // IP
+        fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ipInfo').innerText = d.ip);
+
+        // מהירות
+        const down = await testDownload();
+        document.getElementById('downSpeed').innerText = down;
+        const up = await testUpload();
+        document.getElementById('upSpeed').innerText = up;
 
         btn.disabled = false;
         btn.innerText = "הפעל בדיקה מחדש";
     }
 
     async function testDownload() {
-        const imageAddr = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png?cache=" + Math.random();
-        const downloadSize = 824599 * 4;
         const start = Date.now();
-        for(let i=0; i<2; i++) await fetch(imageAddr); 
+        await fetch("https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png?c=" + start);
         const end = Date.now();
-        return ((downloadSize * 8) / ((end - start) / 1000 * 1024 * 1024)).toFixed(2);
+        return (6.6 / ((end - start) / 1000)).toFixed(2); // חישוב מקורב לפי גודל קובץ
     }
 
     async function testUpload() {
-        const data = new Uint8Array(1500000); 
+        const data = new Uint8Array(1000000);
         const start = Date.now();
         try {
             await fetch('https://httpbin.org/post', { method: 'POST', body: data });
             const end = Date.now();
-            return ((data.length * 8) / ((end - start) / 1000 * 1024 * 1024)).toFixed(2);
+            return (8 / ((end - start) / 1000)).toFixed(2);
         } catch(e) { return "N/A"; }
-    }
-
-    function copyCmd(cmd) {
-        navigator.clipboard.writeText(cmd);
-        alert("הפקודה הועתקה!\n1. לחץ Win + R\n2. הדבק (Ctrl+V)\n3. לחץ Enter");
     }
 </script>
 </body>
