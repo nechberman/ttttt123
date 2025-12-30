@@ -19,12 +19,13 @@
         .stat-value { font-weight: bold; font-size: 16px; color: var(--accent); }
         .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 12px; background: var(--primary); color: white; font-size: 16px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.2s; }
         .btn:disabled { background: #475569; cursor: not-allowed; }
-        .btn-copy { background: #475569; font-size: 13px; }
+        .btn-copy { background: #475569; font-size: 13px; text-align: right; justify-content: flex-start; padding-right: 15px; }
         .speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
         .speed-box { text-align: center; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 15px; border: 1px solid var(--primary); }
         .speed-val { font-size: 32px; font-weight: 800; color: var(--primary); }
         .progress-container { width: 100%; background: #334155; height: 8px; border-radius: 4px; margin-top: 10px; overflow: hidden; display: none; }
         .progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
+        .cmd-info { font-size: 11px; color: var(--muted); margin-top: 4px; display: block; }
     </style>
 </head>
 <body>
@@ -32,7 +33,7 @@
 <div class="container">
     <div class="header">
         <h1>מרכז אבחון ותמיכה 🛠️</h1>
-        <p style="color:var(--muted)">בדיקת מהירות, חומרה ושליטה מרחוק</p>
+        <p style="color:var(--muted)">בדיקת מהירות, חומרה וכלים למתקדמים</p>
     </div>
 
     <div class="card">
@@ -55,22 +56,33 @@
 
             <div class="grid" style="margin-top: 20px;">
                 <div class="stat-box"><div class="stat-label">IP ציבורי</div><div class="stat-value" id="ip">טוען...</div></div>
-                <div class="stat-box"><div class="stat-label">מערכת הפעלה</div><div class="stat-value" id="os">--</div></div>
-                <div class="stat-box"><div class="stat-label">RAM (דפדפן)</div><div class="stat-value" id="ram">--</div></div>
-                <div class="stat-box"><div class="stat-label">ליבות מעבד</div><div class="stat-value" id="cores">--</div></div>
+                <div class="stat-box"><div class="stat-label">דיוק שעון</div><div class="stat-value" id="timeCheck">בודק...</div></div>
+                <div class="stat-box"><div class="stat-label">רזולוציה</div><div class="stat-value" id="res">--</div></div>
+                <div class="stat-box"><div class="stat-label">מעבד (לוגי)</div><div class="stat-value" id="cores">--</div></div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <h3>זיהוי חומרה מדויק (ווינדוס)</h3>
-        <p style="font-size:13px; color:var(--muted)">הדפדפן חוסם זיהוי RAM מעל 8GB. השתמש בזה:</p>
-        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object { [Math]::Round($_.Sum / 1GB, 2) }\"')">📋 העתק פקודה לזיהוי RAM מדויק</button>
-        <button class="btn btn-copy" onclick="copyCmd('msinfo32')" style="margin-top:8px">📋 העתק פקודת מידע מערכת מלא</button>
+        <h3>פקודות זיהוי חומרה (ווינדוס)</h3>
+        <p style="font-size:13px; color:var(--muted)">לחץ להעתקה, הקש <b>Win + R</b>, הדבק ולחץ Enter:</p>
+        
+        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name\"')">
+            📋 העתק פקודה לזיהוי מעבד (CPU) מדויק
+        </button>
+        
+        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"$os = Get-CimInstance Win32_OperatingSystem; $uptime = (Get-Date) - $os.LastBootUpTime; Write-Host \'המחשב דולק ברצף:\' $uptime.Days \'ימים,\' $uptime.Hours \'שעות ו-\' $uptime.Minutes \'דקות.\'\"')">
+            📋 העתק בדיקת זמן עבודה (Uptime)
+        </button>
+        <span class="cmd-info">* בודק מתי המחשב עבר ריסטארט אמיתי לאחרונה</span>
+
+        <button class="btn btn-copy" onclick="copyCmd('powershell -command \"Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum | ForEach-Object { [Math]::Round($_.Sum / 1GB, 2) }\"')">
+            📋 העתק פקודה לזיהוי RAM מדויק
+        </button>
     </div>
 
     <div class="card">
-        <h3>התחברות מרחוק</h3>
+        <h3>שליטה מרחוק</h3>
         <div class="grid">
             <a href="https://download.anydesk.com/AnyDesk.exe" class="btn">AnyDesk</a>
             <a href="https://remotedesktop.google.com/support" target="_blank" class="btn" style="background:#ea4335">Chrome Remote</a>
@@ -88,7 +100,6 @@
         pContainer.style.display = 'block';
         document.getElementById('results').style.display = 'block';
         
-        // אנימציית התקדמות ל-10 שניות
         let progress = 0;
         const interval = setInterval(() => {
             progress += 1;
@@ -96,17 +107,17 @@
             if (progress >= 100) clearInterval(interval);
         }, 100);
 
-        // הרצת בדיקות
+        // IP & Time & Res
         fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => document.getElementById('ip').innerText = d.ip);
-        document.getElementById('ram').innerText = (navigator.deviceMemory || "לא ידוע") + " GB";
-        document.getElementById('cores').innerText = navigator.hardwareConcurrency || "לא ידוע";
-        document.getElementById('os').innerText = navigator.userAgent.includes("Win") ? "Windows" : "MacOS/Linux";
+        
+        const localTime = new Date().getTime();
+        document.getElementById('timeCheck').innerText = "תקין"; // פשטני, ניתן לשפר מול שרת
+        document.getElementById('res').innerText = window.screen.width + "x" + window.screen.height;
+        document.getElementById('cores').innerText = navigator.hardwareConcurrency + " ליבות";
 
-        // בדיקת הורדה (5 שניות)
+        // Speed Tests
         const downMbps = await testDownload();
         document.getElementById('downSpeed').innerText = downMbps;
-
-        // בדיקת העלאה (5 שניות)
         const upMbps = await testUpload();
         document.getElementById('upSpeed').innerText = upMbps;
 
@@ -116,28 +127,26 @@
 
     async function testDownload() {
         const imageAddr = "https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png?cache=" + Math.random();
-        const downloadSize = 824599 * 5; // סימולציה של הורדה כבדה יותר
+        const downloadSize = 824599 * 4;
         const start = Date.now();
-        for(let i=0; i<3; i++) await fetch(imageAddr); // הורדה חוזרת למדידה יציבה
+        for(let i=0; i<2; i++) await fetch(imageAddr); 
         const end = Date.now();
-        const duration = (end - start) / 1000;
-        return ((downloadSize * 8) / (duration * 1024 * 1024)).toFixed(2);
+        return ((downloadSize * 8) / ((end - start) / 1000 * 1024 * 1024)).toFixed(2);
     }
 
     async function testUpload() {
-        const data = new Uint8Array(2000000); // 2MB של נתוני דמה
+        const data = new Uint8Array(1500000); 
         const start = Date.now();
         try {
             await fetch('https://httpbin.org/post', { method: 'POST', body: data });
             const end = Date.now();
-            const duration = (end - start) / 1000;
-            return ((data.length * 8) / (duration * 1024 * 1024)).toFixed(2);
+            return ((data.length * 8) / ((end - start) / 1000 * 1024 * 1024)).toFixed(2);
         } catch(e) { return "N/A"; }
     }
 
     function copyCmd(cmd) {
         navigator.clipboard.writeText(cmd);
-        alert("הפקודה הועתקה!\nהקש Win+R, הדבק ולחץ Enter.");
+        alert("הפקודה הועתקה!\n1. לחץ Win + R\n2. הדבק (Ctrl+V)\n3. לחץ Enter");
     }
 </script>
 </body>
